@@ -1,6 +1,5 @@
 lib/
 obj/
-ecconia_lib/
 **Cheese Util Mod.csproj
 **Cheese Util Mod.csproj.user
 **Cheese Util Mod.sln
@@ -11,3 +10,7 @@ ecconia_lib/
 
 # JetBrains IDE:
 /.idea/
+HarmonyForLogicWorld
+EccsLogicWorldAPI
+EccsGuiBuilder
+CheeseUtilMod2.sln.DotSettings.user
