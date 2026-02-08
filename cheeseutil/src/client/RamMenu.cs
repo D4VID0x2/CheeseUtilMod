@@ -6,18 +6,16 @@ using LogicAPI.Data.BuildingRequests;
 using TMPro;
 using LogicUI.MenuParts;
 using System.IO;
+using CheeseUtilMod.Shared.CustomData;
 using EccsGuiBuilder.Client.Layouts.Elements;
 using EccsGuiBuilder.Client.Layouts.Helper;
 using EccsGuiBuilder.Client.Wrappers;
 using EccsGuiBuilder.Client.Wrappers.AutoAssign;
 using LogicWorld.BuildingManagement;
 
-namespace CheeseUtilMod.Client
-{
-    public class RamMenu : EditComponentMenu, IAssignMyFields
-    {
-        public static void init()
-        {
+namespace CheeseUtilMod.Client {
+    public class RamMenu : EditComponentMenu, IAssignMyFields {
+        public static void init() {
             WS.window("CheeseRamMenu")
                 .setYPosition(150)
                 .configureContent(content => content
@@ -70,44 +68,33 @@ namespace CheeseUtilMod.Client
                 .build();
         }
 
-        [AssignMe]
-        public TMP_InputField filePathInputField;
-        [AssignMe]
-        public HoverButton loadButton;
-        [AssignMe]
-        public InputSlider addressPegSlider;
-        [AssignMe]
-        public InputSlider widthPegSlider;
-        [AssignMe]
-        public GameObject bottomSection;
-        [AssignMe]
-        public GameObject errorText;
+        [AssignMe] public TMP_InputField filePathInputField;
+        [AssignMe] public HoverButton loadButton;
+        [AssignMe] public InputSlider addressPegSlider;
+        [AssignMe] public InputSlider widthPegSlider;
+        [AssignMe] public GameObject bottomSection;
+        [AssignMe] public GameObject errorText;
 
         private bool isComponentResizable;
 
-        protected override void OnStartEditing()
-        {
+        protected override void OnStartEditing() {
             errorText.SetActive(false);
-            if (FirstComponentBeingEdited.ClientCode is RamResizableClient)
-            {
+            if (FirstComponentBeingEdited.ClientCode is RamResizableClient) {
                 var num_inputs = FirstComponentBeingEdited.Component.Data.InputCount;
                 var num_outputs = FirstComponentBeingEdited.Component.Data.OutputCount;
                 addressPegSlider.SetValueWithoutNotify(num_inputs - 3 - num_outputs);
                 widthPegSlider.SetValueWithoutNotify(num_outputs);
                 bottomSection.SetActive(true);
                 isComponentResizable = true;
-            }
-            else if (FirstComponentBeingEdited.ClientCode is DualPortRamResizableClient)
-            {
+            } else if (FirstComponentBeingEdited.ClientCode is DualPortRamResizableClient) {
                 var num_outputs = FirstComponentBeingEdited.Component.Data.OutputCount / 2;
-                var num_inputs = (FirstComponentBeingEdited.Component.Data.InputCount - 3 - num_outputs) / 2;
+                var num_inputs = (FirstComponentBeingEdited.Component.Data.InputCount - Pegs.DualPort.ControlPegs -
+                                  FirstComponentBeingEdited.Component.Data.OutputCount) / 2;
                 addressPegSlider.SetValueWithoutNotify(num_inputs);
                 widthPegSlider.SetValueWithoutNotify(num_outputs);
                 bottomSection.SetActive(true);
                 isComponentResizable = true;
-            }
-            else
-            {
+            } else {
                 var num_inputs = FirstComponentBeingEdited.Component.Data.InputCount;
                 var num_outputs = FirstComponentBeingEdited.Component.Data.OutputCount;
                 addressPegSlider.SetValueWithoutNotify(num_inputs - 3 - num_outputs);
@@ -115,24 +102,21 @@ namespace CheeseUtilMod.Client
                 bottomSection.SetActive(false);
                 isComponentResizable = false;
             }
+
             filePathInputField.text = "";
             filePathInputField.ActivateInputField();
         }
 
-        public override void Initialize()
-        {
+        public override void Initialize() {
             base.Initialize();
             addressPegSlider.OnValueChangedInt += addressCountChanged;
             widthPegSlider.OnValueChangedInt += bitwidthChanged;
-            loadButton.OnClickEnd += () =>
-            {
+            loadButton.OnClickEnd += () => {
                 loadFile();
                 filePathInputField.ActivateInputField();
             };
-            filePathInputField.onSubmit.AddListener(text =>
-            {
-                if (!string.IsNullOrWhiteSpace(text))
-                {
+            filePathInputField.onSubmit.AddListener(text => {
+                if (!string.IsNullOrWhiteSpace(text)) {
                     loadFile();
                     filePathInputField.ActivateInputField();
                 }
@@ -140,23 +124,18 @@ namespace CheeseUtilMod.Client
             filePathInputField.onValueChanged.AddListener(_ => errorText.SetActive(false));
         }
 
-        private void bitwidthChanged(int newBitwidth)
-        {
-            if(!isComponentResizable)
-            {
+        private void bitwidthChanged(int newBitwidth) {
+            if (!isComponentResizable) {
                 return;
             }
 
-            if (FirstComponentBeingEdited.ClientCode is DualPortRamResizableClient)
-            {
+            if (FirstComponentBeingEdited.ClientCode is DualPortRamResizableClient) {
                 BuildRequestManager.SendBuildRequest(new BuildRequest_ChangeDynamicComponentPegCounts(
                     FirstComponentBeingEdited.Address,
-                    newBitwidth + 3 + 2 * addressPegSlider.ValueAsInt,
+                    2 * newBitwidth + Pegs.DualPort.ControlPegs + 2 * addressPegSlider.ValueAsInt,
                     2 * newBitwidth
                 ));
-            }
-            else
-            {
+            } else {
                 BuildRequestManager.SendBuildRequest(new BuildRequest_ChangeDynamicComponentPegCounts(
                     FirstComponentBeingEdited.Address,
                     newBitwidth + 3 + addressPegSlider.ValueAsInt,
@@ -165,22 +144,18 @@ namespace CheeseUtilMod.Client
             }
         }
 
-        private void addressCountChanged(int newAddressBitWidth)
-        {
-            if(!isComponentResizable)
-            {
+        private void addressCountChanged(int newAddressBitWidth) {
+            if (!isComponentResizable) {
                 return;
             }
-            if (FirstComponentBeingEdited.ClientCode is DualPortRamResizableClient)
-            {
+
+            if (FirstComponentBeingEdited.ClientCode is DualPortRamResizableClient) {
                 BuildRequestManager.SendBuildRequest(new BuildRequest_ChangeDynamicComponentPegCounts(
                     FirstComponentBeingEdited.Address,
-                    2 * newAddressBitWidth + 3 + widthPegSlider.ValueAsInt,
+                    2 * newAddressBitWidth + Pegs.DualPort.ControlPegs + 2 * widthPegSlider.ValueAsInt,
                     2 * widthPegSlider.ValueAsInt
                 ));
-            }
-            else
-            {
+            } else {
                 BuildRequestManager.SendBuildRequest(new BuildRequest_ChangeDynamicComponentPegCounts(
                     FirstComponentBeingEdited.Address,
                     newAddressBitWidth + 3 + widthPegSlider.ValueAsInt,
@@ -189,26 +164,22 @@ namespace CheeseUtilMod.Client
             }
         }
 
-        private void loadFile()
-        {
+        private void loadFile() {
             var loadable = (FileLoadable) FirstComponentBeingEdited.ClientCode;
             var filePath = filePathInputField.text;
-            if (File.Exists(filePath))
-            {
+            if (File.Exists(filePath)) {
                 var bytes = File.ReadAllBytes(filePath);
                 var lineWriter = LConsole.BeginLine();
                 loadable.Load(bytes, lineWriter, true);
                 lineWriter.End();
-            }
-            else
-            {
+            } else {
                 errorText.SetActive(true);
-                LConsole.WriteLine($"Unable to load file rich text <mspace=0.65em>'<noparse>{filePath}</noparse>'</mspace> as it does not exist");
+                LConsole.WriteLine(
+                    $"Unable to load file rich text <mspace=0.65em>'<noparse>{filePath}</noparse>'</mspace> as it does not exist");
             }
         }
 
-        protected override IEnumerable<string> GetTextIDsOfComponentTypesThatCanBeEdited()
-        {
+        protected override IEnumerable<string> GetTextIDsOfComponentTypesThatCanBeEdited() {
             return new string[] {
                 "CheeseUtilMod.Ram4aX1b",
                 "CheeseUtilMod.Ram8aX1b",
