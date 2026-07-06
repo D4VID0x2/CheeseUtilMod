@@ -5,5 +5,6 @@ namespace CheeseUtilMod.Client
     public interface FileLoadable 
     {
         void Load(byte[] filedata, LineWriter writer, bool force);
+        void Save(string filePath);
     }
 }

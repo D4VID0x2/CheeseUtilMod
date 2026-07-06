@@ -14,5 +14,14 @@ namespace CheeseUtilMod.Shared.CustomData
 			}
 			return output.ToArray();
 		}
+
+		public static byte[] Decompress(byte[] compressed)
+		{
+			using MemoryStream input = new MemoryStream(compressed);
+			using DeflateStream deflateStream = new DeflateStream(input, CompressionMode.Decompress);
+			using MemoryStream output = new MemoryStream();
+			deflateStream.CopyTo(output);
+			return output.ToArray();
+		}
 	}
 }

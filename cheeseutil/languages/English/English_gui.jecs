@@ -1,5 +1,7 @@
 CheeseRamMenu.FileLoad: "Load File"
+CheeseRamMenu.FileSave: "Save to File"
 CheeseRamMenu.FileFieldHint: "Filename here..."
 CheeseRamMenu.FileNotFound: "<color=\#f00>File does not exist!</color>"
+CheeseRamMenu.SaveError: "<color=\#f00>File already exists or it's directory does not!</color>"
 CheeseRamMenu.AddressLines: "Address Lines"
 CheeseRamMenu.BitWidth: "Bit Width"
