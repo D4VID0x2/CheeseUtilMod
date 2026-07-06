@@ -201,6 +201,7 @@ namespace CheeseUtilMod.Client
                 var lineWriter = LConsole.BeginLine();
                 loadable.Load(bytes, lineWriter, true);
                 lineWriter.End();
+                errorText.SetActive(false);
             }
             else
             {
