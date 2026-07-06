@@ -1,6 +1,4 @@
 ﻿using LogicWorld.Rendering.Components;
-using System.IO;
-using System.IO.Compression;
 
 using CheeseUtilMod.Shared.CustomData;
 using LICC;
@@ -42,19 +40,9 @@ namespace CheeseUtilMod.Client
             }
         }
 
-        static byte[] Compress(byte[] data)
-        {
-            MemoryStream output = new MemoryStream();
-            using (DeflateStream dstream = new DeflateStream(output, CompressionLevel.Optimal))
-            {
-                dstream.Write(data, 0, data.Length);
-            }
-            return output.ToArray();
-        }
-
         protected void SendDataToServer()
         {
-            Data.ClientIncomingData = Compress(memory);
+            Data.ClientIncomingData = Utils.Compress(memory);
             Data.State = 1;
         }
 

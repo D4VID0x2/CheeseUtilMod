@@ -1,6 +1,4 @@
 ﻿using LogicWorld.Rendering.Components;
-using System.IO;
-using System.IO.Compression;
 
 using CheeseUtilMod.Shared.CustomData;
 using LICC;
@@ -23,19 +21,9 @@ namespace CheeseUtilMod.Client
         {
             if (force || GetInputState(Pegs.DualPort.LOAD))
             {
-                Data.ClientIncomingData = Compress(filedata);
+                Data.ClientIncomingData = Utils.Compress(filedata);
                 Data.State = 1;
             }
-        }
-
-        static byte[] Compress(byte[] data)
-        {
-            MemoryStream output = new MemoryStream();
-            using (DeflateStream dstream = new DeflateStream(output, CompressionLevel.Optimal))
-            {
-                dstream.Write(data, 0, data.Length);
-            }
-            return output.ToArray();
         }
 
         protected override void SetDataDefaultValues()
