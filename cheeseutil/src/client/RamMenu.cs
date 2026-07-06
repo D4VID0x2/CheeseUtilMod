@@ -130,14 +130,12 @@ namespace CheeseUtilMod.Client
             loadButton.OnClickEnd += () =>
             {
                 loadFile();
-                filePathInputField.ActivateInputField();
             };
             filePathInputField.onSubmit.AddListener(text =>
             {
                 if (!string.IsNullOrWhiteSpace(text))
                 {
                     loadFile();
-                    filePathInputField.ActivateInputField();
                 }
             });
             filePathInputField.onValueChanged.AddListener(_ => errorText.SetActive(false));
@@ -208,6 +206,7 @@ namespace CheeseUtilMod.Client
             {
                 errorText.SetActive(true);
                 LConsole.WriteLine($"Unable to load file rich text <mspace=0.65em>'<noparse>{filePath}</noparse>'</mspace> as it does not exist");
+                filePathInputField.ActivateInputField();
             }
         }
 
