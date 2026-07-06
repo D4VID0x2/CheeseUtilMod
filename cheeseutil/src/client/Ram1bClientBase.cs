@@ -14,7 +14,7 @@ namespace CheeseUtilMod.Client
         protected override void Initialize()
         {
             addressLines = CodeInfoInts[0];
-            memory = new byte[(1 << addressLines / 8)];
+            memory = new byte[(1 << addressLines) / 8];
             CheeseUtilClient.fileLoadables.Add(this);
         }
 
@@ -27,10 +27,10 @@ namespace CheeseUtilMod.Client
         {
             if (force || GetInputState(PEG_L))
             {
-                var max_index = (1 << addressLines / 8);
-                if (filedata.Length * 8 < max_index)
+                var max_index = (1 << addressLines) / 8;
+                if (filedata.Length < max_index)
                 {
-                    max_index = filedata.Length * 8;
+                    max_index = filedata.Length;
                 }
                 for (int i = 0; i < max_index; i++)
                 {
