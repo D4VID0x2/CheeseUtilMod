@@ -1,4 +1,6 @@
-﻿using LogicWorld.Rendering.Components;
+﻿using System;
+using System.IO;
+using LogicWorld.Rendering.Components;
 
 using CheeseUtilMod.Shared.CustomData;
 using LICC;
@@ -7,6 +9,8 @@ namespace CheeseUtilMod.Client
 {
     public class Ram1bClientBase : ComponentClientCode<IRamData>, FileLoadable
     {
+        private string requestingSavePath = null;
+
         public int addressLines;
         public byte[] memory;
         private static int PEG_L = 2;
@@ -44,6 +48,34 @@ namespace CheeseUtilMod.Client
         {
             Data.ClientIncomingData = Utils.Compress(memory);
             Data.State = 1;
+        }
+
+        public void Save(string filePath)
+        {
+            requestingSavePath = filePath;
+            Data.State = 2;
+        }
+
+        protected override void DataUpdate()
+        {
+            base.DataUpdate();
+            if (Data.State != 3 || requestingSavePath == null) return;
+
+            try
+            {
+                byte[] data = Utils.Decompress(Data.ClientIncomingData ?? []);
+                Logger.Info($"[CheeseUtilMod] Got {data.Length} bytes of RAM contents from server");
+                File.WriteAllBytes(requestingSavePath, data);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("[CheeseUtilMod] Saving RAM contents failed with exception: " + ex);
+            }
+            finally
+            {
+                Data.State = 0;
+                requestingSavePath = null;
+            }
         }
 
         protected override void SetDataDefaultValues()

@@ -33,8 +33,16 @@ namespace CheeseUtilMod.Client
                         .setLocalizationKey("CheeseRamMenu.FileNotFound")
                         .injectionKey(nameof(errorText))
                     )
+                    .add(WS.textLine
+                        .setLocalizationKey("CheeseRamMenu.SaveError")
+                        .injectionKey(nameof(saveErrorText))
+                    )
                     .add(WS.button.setLocalizationKey("CheeseRamMenu.FileLoad")
                         .injectionKey(nameof(loadButton))
+                        .add<ButtonLayout>()
+                    )
+                    .add(WS.button.setLocalizationKey("CheeseRamMenu.FileSave")
+                        .injectionKey(nameof(saveButton))
                         .add<ButtonLayout>()
                     )
                     .addContainer("BottomBox", bottomBox => bottomBox
@@ -76,6 +84,8 @@ namespace CheeseUtilMod.Client
         [AssignMe]
         public HoverButton loadButton;
         [AssignMe]
+        public HoverButton saveButton;
+        [AssignMe]
         public InputSlider addressPegSlider;
         [AssignMe]
         public InputSlider widthPegSlider;
@@ -83,12 +93,15 @@ namespace CheeseUtilMod.Client
         public GameObject bottomSection;
         [AssignMe]
         public GameObject errorText;
+        [AssignMe]
+        public GameObject saveErrorText;
 
         private bool isComponentResizable;
 
         protected override void OnStartEditing()
         {
             errorText.SetActive(false);
+            saveErrorText.SetActive(false);
             if (FirstComponentBeingEdited.ClientCode is RamResizableClient)
             {
                 var num_inputs = FirstComponentBeingEdited.Component.Data.InputCount;
@@ -131,6 +144,9 @@ namespace CheeseUtilMod.Client
             {
                 loadFile();
             };
+            saveButton.OnClickEnd += () => {
+                saveFile();
+            };
             filePathInputField.onSubmit.AddListener(text =>
             {
                 if (!string.IsNullOrWhiteSpace(text))
@@ -138,7 +154,11 @@ namespace CheeseUtilMod.Client
                     loadFile();
                 }
             });
-            filePathInputField.onValueChanged.AddListener(_ => errorText.SetActive(false));
+            filePathInputField.onValueChanged.AddListener(_ =>
+            {
+                errorText.SetActive(false);
+                saveErrorText.SetActive(false);
+            });
         }
 
         private void bitwidthChanged(int newBitwidth)
@@ -208,6 +228,29 @@ namespace CheeseUtilMod.Client
                 errorText.SetActive(true);
                 LConsole.WriteLine($"Unable to load file rich text <mspace=0.65em>'<noparse>{filePath}</noparse>'</mspace> as it does not exist");
                 filePathInputField.ActivateInputField();
+            }
+        }
+
+        private void saveFile()
+        {
+            var loadable = (FileLoadable) FirstComponentBeingEdited.ClientCode;
+            var filePath = filePathInputField.text;
+            if (File.Exists(filePath))
+            {
+                saveErrorText.SetActive(true);
+                LConsole.WriteLine($"Unable to save to file '{filePath}' as it already exist and would be overwritten");
+                filePathInputField.ActivateInputField();
+            }
+            else if(filePath == "" || !Directory.Exists(Path.GetDirectoryName(filePath)))
+            {
+                saveErrorText.SetActive(true);
+                LConsole.WriteLine($"Unable to save file, directory {Path.GetDirectoryName(filePath)} does not exist");
+                filePathInputField.ActivateInputField();
+            }
+            else
+            {
+                saveErrorText.SetActive(false);
+                loadable.Save(filePath);
             }
         }
 

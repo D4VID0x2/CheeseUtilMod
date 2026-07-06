@@ -29,7 +29,7 @@ namespace CheeseUtilMod.Components
         public override void Dispose()
         {
         }
- 
+
         private int getPegShifted(int peg, int shift)
         {
             int bas = Inputs[peg].On ? 1 : 0;
@@ -107,6 +107,20 @@ namespace CheeseUtilMod.Components
                 }
                 QueueLogicUpdate();
             }
+            else if (Data.State == 2 && Data.ClientIncomingData != null)
+            {
+                try
+                {
+                    byte[] compressed = Utils.Compress(memory);
+                    Logger.Info($"[CheeseUtilMod] Sending {memory.Length} bytes ({compressed.Length} compressed) to client");
+                    Data.State = 3;
+                    Data.ClientIncomingData = compressed;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("[CheeseUtilMod] Sending data to client failed with exception: " + ex);
+                }
+            }
         }
 
         protected override void SetDataDefaultValues()
@@ -118,7 +132,7 @@ namespace CheeseUtilMod.Components
         {
             if (!isdatadirty) return;
             isdatadirty = false;
-            
+
             MemoryStream memstream = new MemoryStream();
             memstream.Position = 0;
             DeflateStream compressor = new DeflateStream(memstream, CompressionLevel.Optimal, true);

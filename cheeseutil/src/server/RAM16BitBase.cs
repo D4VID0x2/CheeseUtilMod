@@ -108,6 +108,22 @@ namespace CheeseUtilMod.Components
                 }
                 QueueLogicUpdate();
             }
+            else if (Data.State == 2 && Data.ClientIncomingData != null)
+            {
+                try
+                {
+                    byte[] mem1 = new byte[memory.Length * 2];
+                    Buffer.BlockCopy(memory, 0, mem1, 0, mem1.Length);
+                    byte[] compressed = Utils.Compress(mem1);
+                    Logger.Info($"[CheeseUtilMod] Sending {memory.Length} bytes ({compressed.Length} compressed) to client");
+                    Data.State = 3;
+                    Data.ClientIncomingData = compressed;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("[CheeseUtilMod] Sending data to client failed with exception: " + ex);
+                }
+            }
         }
 
         protected override void SetDataDefaultValues()
